@@ -4,6 +4,7 @@ from threading import Thread, Event
 from Queue import Queue, Empty
 import kaa.metadata
 import time
+import pyhash
 
 from file import ScanFile
 
@@ -25,6 +26,7 @@ class Scanner(Thread):
         self.path = path
         self.num_scanned = 0
         Thread.__init__(self)
+        self.hasher = pyhash.murmur3_32()
 
     def run(self):
         targets = []
@@ -33,14 +35,14 @@ class Scanner(Thread):
             for ext in AUDIO_EXT:
                 pattern = "*.%s" % ext
                 for fname in fnmatch.filter(files, pattern):
-                    targets.append(ScanFile(os.path.join(root, fname), 0, 'audio'))
+                    fp = os.path.join(root, fname)
+                    hsh = self.hasher(str(os.stat(fp)))
+                    targets.append(ScanFile(fp, hsh, 'audio'))
 
         for target in targets:
             file_queue.put(target)
 
         self.num_scanned = len(targets)
-        print "Scanner: added %d targets" % len(targets)
-
         scanner_done_event.set()
 
 
@@ -72,6 +74,9 @@ class Monitor(Thread):
         Thread.__init__(self)
         self.ts = []
         self.scanner = scanner
+        self.scanned = 0
+        self.tagged = 0
+        self.time = 0.0
 
     def add_tagger(self, t):
         self.ts.append(t)
@@ -84,18 +89,25 @@ class Monitor(Thread):
         ns = 0
         nt = 0
         while not shutdown_event.isSet():
+            time.sleep(0.1)
             dt = time.time() - last_time
             ns = self.scanner.num_scanned
             nt = 0
             for t in self.ts:
                 nt += t.num_tagged
-            print "%f scanned per second" % ((ns - last_ns) / dt)
-            print "%f tagged per second" % ((nt - last_nt) / dt)
+            if ns > last_ns:
+                print "%0.1f scans/sec" % ((ns - last_ns) / dt)
+            if nt > last_nt:
+                print "%0.1f tags/sec" % ((nt - last_nt) / dt)
             last_ns = ns
             last_nt = nt
+            self.tagged = nt
+            self.time += dt
 
             last_time = time.time()
-            time.sleep(1)
+
+    def get_stats(self):
+        return "%d scanned and tagged in %0.1f seconds." % (self.tagged, self.time)
 
 if __name__ == "__main__":
     print "Scanning %s:" % SCAN_BASE
@@ -120,6 +132,5 @@ if __name__ == "__main__":
         i.join()
     end = time.time()
     shutdown_event.set()
-
-    print "Runtime: %f s" % (end - start)
-    print "Exiting"
+    mon.join()
+    print mon.get_stats()
