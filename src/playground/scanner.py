@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     mon.start()
 
-    while (not tagger_done_event.isSet()) and (not scanner_done_event.isSet()):
+    while (not shutdown_event.isSet()) or ((not tagger_done_event.isSet()) and (not scanner_done_event.isSet())):
         pass
 
     for i in ts:
