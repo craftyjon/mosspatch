@@ -18,6 +18,7 @@ VIDEO_EXT = ['avi', 'mp4', 'mpg', 'mkv']
 file_queue = Queue()
 shutdown_event = Event()
 scanner_done_event = Event()
+tagger_done_event = Event()
 
 
 # Handle interrupt
@@ -71,6 +72,7 @@ class Tagger(Thread):
                 f = file_queue.get(block=True, timeout=0.1)
             except Empty:
                 if scanner_done_event.isSet():
+                    tagger_done_event.set()
                     return
                 else:
                     continue
@@ -139,6 +141,9 @@ if __name__ == "__main__":
         i.start()
 
     mon.start()
+
+    while (not tagger_done_event.isSet()) and (not scanner_done_event.isSet()):
+        pass
 
     for i in ts:
         i.join()
