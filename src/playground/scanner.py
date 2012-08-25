@@ -61,18 +61,26 @@ class Tagger(Thread):
                     continue
 
             info = kaa.metadata.parse(f.name)
-            print "%s - %s" % (info.artist, info.title)
+            #print "%s - %s" % (info.artist, info.title)
 
 
 if __name__ == "__main__":
     print "Scanning %s:" % SCAN_BASE
 
     scanner = Scanner(SCAN_BASE)
-    tagger = Tagger()
+
+    ts = []
+    for i in range(5):
+        ts.append(Tagger())
 
     start = time.time()
     scanner.start()
-    tagger.run()
+
+    for i in ts:
+        i.start()
+
+    for i in ts:
+        i.join()
     end = time.time()
 
     print "Runtime: %f s" % (end - start)
