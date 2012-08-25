@@ -5,6 +5,7 @@ from Queue import Queue, Empty
 import kaa.metadata
 import time
 import pyhash
+import signal
 
 from file import ScanFile
 
@@ -17,6 +18,13 @@ VIDEO_EXT = ['avi', 'mp4', 'mpg', 'mkv']
 file_queue = Queue()
 shutdown_event = Event()
 scanner_done_event = Event()
+
+
+# Handle interrupt
+def sigint_handler(sig, stack):
+    shutdown_event.set()
+
+signal.signal(signal.SIGINT, sigint_handler)
 
 
 # Scanner: finds files to add to file_queue
@@ -40,6 +48,8 @@ class Scanner(Thread):
                     hsh = self.hasher(str(os.stat(fp)))
                     targets.append(ScanFile(fp, hsh, 'audio'))
                     self.num_scanned += 1
+                    if shutdown_event.isSet():
+                        return
 
         for target in targets:
             file_queue.put(target)
