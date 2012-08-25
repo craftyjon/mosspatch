@@ -25,8 +25,6 @@ def sigint_handler(sig, stack):
     print "Caught signal"
     shutdown_event.set()
 
-signal.signal(signal.SIGINT, sigint_handler)
-
 
 # Scanner: finds files to add to file_queue
 class Scanner(Thread):
@@ -125,6 +123,7 @@ class Monitor(Thread):
 if __name__ == "__main__":
     print "Scanning %s:" % SCAN_BASE
 
+    signal.signal(signal.SIGINT, sigint_handler)
     scanner = Scanner(SCAN_BASE)
     mon = Monitor(scanner)
 
