@@ -49,6 +49,7 @@ class Tagger(Thread):
 
     def __init__(self):
         Thread.__init__(self)
+        self.num_tagged = 0
 
     def run(self):
         while not shutdown_event.isSet():
@@ -61,13 +62,46 @@ class Tagger(Thread):
                     continue
 
             info = kaa.metadata.parse(f.name)
+            self.num_tagged += 1
             #print "%s - %s" % (info.artist, info.title)
 
+
+class Monitor(Thread):
+
+    def __init__(self, scanner):
+        Thread.__init__(self)
+        self.ts = []
+        self.scanner = scanner
+
+    def add_tagger(self, t):
+        self.ts.append(t)
+
+    def run(self):
+        last_ns = 0
+        last_nt = 0
+        last_time = time.time()
+        dt = 0.0
+        ns = 0
+        nt = 0
+        while not shutdown_event.isSet():
+            dt = time.time() - last_time
+            ns = self.scanner.num_scanned
+            nt = 0
+            for t in self.ts:
+                nt += t.num_tagged
+            print "%f scanned per second" % ((ns - last_ns) / dt)
+            print "%f tagged per second" % ((nt - last_nt) / dt)
+            last_ns = ns
+            last_nt = nt
+
+            last_time = time.time()
+            time.sleep(1)
 
 if __name__ == "__main__":
     print "Scanning %s:" % SCAN_BASE
 
     scanner = Scanner(SCAN_BASE)
+    mon = Monitor(scanner)
 
     ts = []
     for i in range(5):
@@ -77,11 +111,15 @@ if __name__ == "__main__":
     scanner.start()
 
     for i in ts:
+        mon.add_tagger(i)
         i.start()
+
+    mon.start()
 
     for i in ts:
         i.join()
     end = time.time()
+    shutdown_event.set()
 
     print "Runtime: %f s" % (end - start)
     print "Exiting"
