@@ -25,6 +25,8 @@ tagger_done_event = Event()
 def sigint_handler(sig, stack):
     print "Caught signal"
     shutdown_event.set()
+    scanner_done_event.set()
+    tagger_done_event.set()
 
 
 # Scanner: finds files to add to file_queue
