@@ -22,6 +22,7 @@ scanner_done_event = Event()
 
 # Handle interrupt
 def sigint_handler(sig, stack):
+    print "Caught signal"
     shutdown_event.set()
 
 signal.signal(signal.SIGINT, sigint_handler)
