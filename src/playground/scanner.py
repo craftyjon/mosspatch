@@ -26,11 +26,12 @@ class Scanner(Thread):
         self.path = path
         self.num_scanned = 0
         Thread.__init__(self)
-        self.hasher = pyhash.murmur3_32()
+        #self.hasher = pyhash.murmur3_32()
+        self.hasher = pyhash.super_fast_hash()
 
     def run(self):
         targets = []
-
+        start = time.time()
         for root, dirs, files in os.walk(self.path):
             for ext in AUDIO_EXT:
                 pattern = "*.%s" % ext
@@ -43,6 +44,8 @@ class Scanner(Thread):
             file_queue.put(target)
 
         self.num_scanned = len(targets)
+        end = time.time()
+        print "Scanner done after %0.5f seconds." % (end - start)
         scanner_done_event.set()
 
 
@@ -91,6 +94,7 @@ class Monitor(Thread):
         while not shutdown_event.isSet():
             time.sleep(0.1)
             dt = time.time() - last_time
+            last_time = time.time()
             ns = self.scanner.num_scanned
             nt = 0
             for t in self.ts:
@@ -103,8 +107,6 @@ class Monitor(Thread):
             last_nt = nt
             self.tagged = nt
             self.time += dt
-
-            last_time = time.time()
 
     def get_stats(self):
         return "%d scanned and tagged in %0.1f seconds." % (self.tagged, self.time)
