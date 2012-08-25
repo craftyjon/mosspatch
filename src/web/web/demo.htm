@@ -1,0 +1,35 @@
+<html>
+<head>
+    <code><script src="static/js/jquery.js"></script>
+    <script src="static/js/mediaelement-and-player.min.js"></script>
+    <link rel="stylesheet" href="static/css/mediaelementplayer.css" /></code>
+</head>
+
+<body>
+    <h1>Video demo</h1>
+    <a href="#" id="lnk1">Play mkv transcoded</a><br />
+    <a href="#" id="lnk2">Play m4v directly</a><br />
+    <video width="1280" height="720" poster="static/img/poster.png" controls="controls" preload="none" id="vid">
+        <source type="video/mp4" src="" />
+    </video>
+
+    <script>
+    // using jQuery
+    var player = new MediaElementPlayer('#vid');
+
+    $('#lnk1').click(function() {
+        player.pause();
+        player.setSrc('futurama.s07e01.mkv');
+        player.load();
+        player.play();
+    });
+
+    $('#lnk2').click(function() {
+        player.pause();
+        player.setSrc('futurama.s07e01.m4v');
+        player.load();
+        player.play();
+    });
+    </script>
+</body>
+</html>

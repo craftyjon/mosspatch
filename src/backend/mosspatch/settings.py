@@ -11,3 +11,6 @@ class MosspatchConfig:
             print section
             for option in self.cp.options(section):
                 print " ", option, "=", self.cp.get(section, option)
+
+    def get(self, section, option):
+        return self.cp.get(section, option)

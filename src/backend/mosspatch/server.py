@@ -1,8 +1,8 @@
 """
-Mosspatch server: Runs the main event loop
+server: Runs the main event loop
 """
 
-from twisted.internet import reactor
+#from twisted.internet import reactor
 
 
 class MosspatchServer:
