@@ -49,7 +49,6 @@ class Scanner(Thread):
                     targets.append(ScanFile(fp, hsh, 'audio'))
                     self.num_scanned += 1
                     if shutdown_event.isSet():
-                        print "Scanner exiting"
                         return
 
         for target in targets:
@@ -74,15 +73,13 @@ class Tagger(Thread):
             except Empty:
                 if scanner_done_event.isSet():
                     tagger_done_event.set()
-                    print "Tagger exiting"
-                    return
+                    break
                 else:
                     continue
 
             info = kaa.metadata.parse(f.name)
             self.num_tagged += 1
             #print "%s - %s" % (info.artist, info.title)
-        print "Tagger exiting"
 
 
 class Monitor(Thread):
@@ -121,7 +118,6 @@ class Monitor(Thread):
             last_nt = nt
             self.tagged = nt
             self.time += dt
-        print "Monitor exiting"
 
     def get_stats(self):
         return "%d scanned and tagged in %0.1f seconds." % (self.tagged, self.time)
@@ -147,7 +143,8 @@ if __name__ == "__main__":
     mon.start()
 
     while (not shutdown_event.isSet()) or ((not tagger_done_event.isSet()) and (not scanner_done_event.isSet())):
-        pass
+        if scanner_done_event.isSet() and tagger_done_event.isSet():
+            shutdown_event.set()
 
     for i in ts:
         i.join()
