@@ -91,7 +91,7 @@ class Tagger(Thread):
             info = kaa.metadata.parse(f.name)
 
             desired_keys = ['title', 'artist', 'album', 'genre']
-            d = {k: v for k, v in info.convert().iteritems() if k in desired_keys}
+            d = {unicode(k): unicode(v) for k, v in info.convert().iteritems() if k in desired_keys}
 
             item_queue.put(MediaItem(unicode(p), unicode(n), f.hash, f.type, pickle.dumps(d)))
             self.num_tagged += 1
