@@ -6,19 +6,26 @@ import kaa.metadata
 import time
 import pyhash
 import signal
+from storm.locals import *
+import pickle
 
 from file import ScanFile
+from item import MediaItem
 
 # Constants
 SCAN_BASE = "/home/jevans/test-music-library/music"
 AUDIO_EXT = ['flac', 'mp3', 'm4a']
 VIDEO_EXT = ['avi', 'mp4', 'mpg', 'mkv']
+DB_FILE = "mosspatch-library.db"
 
 # Globals
 file_queue = Queue()
+item_queue = Queue()
+
 shutdown_event = Event()
 scanner_done_event = Event()
 tagger_done_event = Event()
+database_done_event = Event()
 
 
 # Handle interrupt
@@ -27,6 +34,7 @@ def sigint_handler(sig, stack):
     shutdown_event.set()
     scanner_done_event.set()
     tagger_done_event.set()
+    database_done_event.set()
 
 
 # Scanner: finds files to add to file_queue
@@ -48,7 +56,7 @@ class Scanner(Thread):
                 for fname in fnmatch.filter(files, pattern):
                     fp = os.path.join(root, fname)
                     hsh = self.hasher(str(os.stat(fp)))
-                    targets.append(ScanFile(fp, hsh, 'audio'))
+                    targets.append(ScanFile(fp, hsh, 0))
                     self.num_scanned += 1
                     if shutdown_event.isSet():
                         return
@@ -79,9 +87,43 @@ class Tagger(Thread):
                 else:
                     continue
 
+            p, n = os.path.split(f.name)
             info = kaa.metadata.parse(f.name)
+
+            desired_keys = ['title', 'artist', 'album', 'genre']
+            d = {k: v for k, v in info.convert().iteritems() if k in desired_keys}
+
+            item_queue.put(MediaItem(unicode(p), unicode(n), f.hash, f.type, pickle.dumps(d)))
             self.num_tagged += 1
             #print "%s - %s" % (info.artist, info.title)
+
+
+# DatabaseWorker: inserts tagged files into the database
+class DatabaseWorker(Thread):
+
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        self.database = create_database("sqlite:media.db")
+        self.store = Store(self.database)
+        self.store.execute("DROP TABLE IF EXISTS items")
+        self.store.execute("CREATE TABLE items (item_id INTEGER PRIMARY KEY, "
+                      "file_path VARCHAR, file_name VARCHAR, stat_hash INTEGER, "
+                      "file_type INTEGER, metadata BLOB)", noresult=True)
+
+        while not shutdown_event.isSet():
+            try:
+                f = item_queue.get(block=True, timeout=0.1)
+            except Empty:
+                if tagger_done_event.isSet():
+                    database_done_event.set()
+                    break
+                else:
+                    continue
+            self.store.add(f)
+            self.store.flush()
+            self.store.commit()
 
 
 class Monitor(Thread):
@@ -130,6 +172,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigint_handler)
     scanner = Scanner(SCAN_BASE)
     mon = Monitor(scanner)
+    dbw = DatabaseWorker()
 
     ts = []
     for i in range(5):
@@ -143,6 +186,7 @@ if __name__ == "__main__":
         i.start()
 
     mon.start()
+    dbw.start()
 
     while (not shutdown_event.isSet()) or ((not tagger_done_event.isSet()) and (not scanner_done_event.isSet())):
         if scanner_done_event.isSet() and tagger_done_event.isSet():
@@ -152,5 +196,6 @@ if __name__ == "__main__":
         i.join()
     end = time.time()
     shutdown_event.set()
+    dbw.join()
     mon.join()
     print mon.get_stats()

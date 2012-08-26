@@ -1,7 +1,7 @@
 class ScanFile:
     name = ""
     hash = 0
-    type = ""
+    type = 0
 
     def __init__(self, name, hash, type):
         self.name = name
