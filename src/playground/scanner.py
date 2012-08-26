@@ -90,12 +90,12 @@ class Tagger(Thread):
             p, n = os.path.split(f.name)
             info = kaa.metadata.parse(f.name)
 
-            desired_keys = ['title', 'artist', 'album', 'genre']
-            d = {k: v for k, v in info.convert().iteritems() if k in desired_keys}
+            if info is not None:
+                desired_keys = ['title', 'artist', 'album', 'genre']
+                d = {k: v for k, v in info.convert().iteritems() if k in desired_keys}
 
-            item_queue.put(MediaItem(unicode(p, 'utf-8'), unicode(n, 'utf-8'), f.hash, f.type, pickle.dumps(d)))
-            self.num_tagged += 1
-            #print "%s - %s" % (info.artist, info.title)
+                item_queue.put(MediaItem(unicode(p, 'utf-8'), unicode(n, 'utf-8'), f.hash, f.type, pickle.dumps(d)))
+                self.num_tagged += 1
 
 
 # DatabaseWorker: inserts tagged files into the database
