@@ -20,28 +20,27 @@ This is a mosspatch.
 
 <!-- Templates -->
 <script type="text/template" id="tpl-item-list-item">
-    <a href='#items/<%= item_id %>'><%= metadata.title %></a>
+    <a href='#items/<%= item_id %>'><%= title %></a>
 </script>
 
 <script type="text/template" id="tpl-item-details">
     <div class="form-left-col">
         <label>Id:</label>
         <input type="text" id="item_id" name="id" value="<%= item_id %>" disabled />
-        <label>Name:</label>
-        <input type="text" id="file_name" name="file_name" value="<%= file_name %>" required/>
-        <label>Grapes:</label>
-        <input type="text" id="artist" name="artist" value="<%= metadata.artist %>"/>
-        <label>Country:</label>
-        <input type="text" id="title" name="title" value="<%= metadata.title %>"/>
-        <label>Region:</label>
-        <input type="text" id="album" name="album"  value="<%= metadata.album %>"/>
+        <label>Artist:</label>
+        <input type="text" id="artist" name="artist" value="<%= artist %>"/>
+        <label>Title:</label>
+        <input type="text" id="title" name="title" value="<%= title %>"/>
+        <label>Album:</label>
+        <input type="text" id="album" name="album"  value="<%= album %>"/>
         <label>Year:</label>
-        <input type="text" id="year" name="year"  value="<%= metadata.year %>"/>
+        <input type="text" id="year" name="year"  value="<%= year %>"/>
     </div>
 </script>
 
 <!-- JavaScript -->
 <script src="js/jquery-1.7.1.min.js"></script>
+<script src="js/json2.js"></script>
 <script src="js/underscore-min.js"></script>
 <script src="js/backbone-min.js"></script>
 <script src="js/main.js"></script>   

@@ -1,15 +1,14 @@
 // Models
 window.MediaItem = Backbone.Model.extend({
     idAttribute: 'item_id',
+    urlBase: '/api/1.0/item',
 });
 
 window.MediaItemCollection = Backbone.Collection.extend({
-    model:MediaItem,
+    model: MediaItem,
     url: '/api/1.0/all_music',
     parse: function(resp, xhr) {
-        //this.header = resp.header;
-        //this.stats = resp.stats;
-        return resp.all_music;
+        return resp.all_music
     },
 });
 
@@ -25,7 +24,7 @@ window.MediaItemListView = Backbone.View.extend({
 
     render:function (eventName) {
         _.each(this.model.models, function (item) {
-            $(this.el).append(new MediaItemListView({model:item}).render().el);
+            $(this.el).append(new MediaItemListItemView({model:item}).render().el);
         }, this);
         return this;
     }

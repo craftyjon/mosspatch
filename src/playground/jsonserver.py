@@ -17,9 +17,15 @@ def all_music():
     lim = request.query.lim or '100'
     limit = int(lim)
     result = store.find(MediaItem, MediaItem.file_type == 0)
-    music_list = [{'item_id': item.item_id, 'file_name': item.file_name,
-                    'metadata': pickle.loads(item.metadata)}
-                    for item in result.order_by(MediaItem.file_path)[:limit]]
+    music_list = []
+    for item in result.order_by(MediaItem.item_id)[:limit]:
+        md = pickle.loads(item.metadata)
+        music_list.append({'item_id': item.item_id,
+                           'title': md['title'] or item.file_name,
+                           'artist': md.get('artist', 'Unknown'),
+                           'album': md.get('album', 'Unknown'),
+                           'year': md.get('year', 'Unknown')})
+
     return {'all_music': music_list}
 
 
