@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Backbone Cellar</title>
+<!--link rel="stylesheet" href="../css/styles.css" /-->
+</head>
+
+<body>
+
+<div id="header"><span class="title">Mosspatch</span></div>
+
+<div id="sidebar"></div>
+
+<div id="content">
+<h2>Welcome to Mosspatch</h2>
+<p>
+This is a mosspatch.
+</p>
+</div>
+
+<!-- Templates -->
+<script type="text/template" id="tpl-item-list-item">
+    <a href='#items/<%= item_id %>'><%= metadata.title %></a>
+</script>
+
+<script type="text/template" id="tpl-item-details">
+    <div class="form-left-col">
+        <label>Id:</label>
+        <input type="text" id="item_id" name="id" value="<%= item_id %>" disabled />
+        <label>Name:</label>
+        <input type="text" id="file_name" name="file_name" value="<%= file_name %>" required/>
+        <label>Grapes:</label>
+        <input type="text" id="artist" name="artist" value="<%= metadata.artist %>"/>
+        <label>Country:</label>
+        <input type="text" id="title" name="title" value="<%= metadata.title %>"/>
+        <label>Region:</label>
+        <input type="text" id="album" name="album"  value="<%= metadata.album %>"/>
+        <label>Year:</label>
+        <input type="text" id="year" name="year"  value="<%= metadata.year %>"/>
+    </div>
+</script>
+
+<!-- JavaScript -->
+<script src="js/jquery-1.7.1.min.js"></script>
+<script src="js/underscore-min.js"></script>
+<script src="js/backbone-min.js"></script>
+<script src="js/main.js"></script>   
+
+</body>
+</html>

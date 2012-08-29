@@ -121,6 +121,7 @@ class DatabaseWorker(Thread):
                     break
                 else:
                     continue
+            print "DatabaseWorker: Adding " + f.file_name
             self.store.add(f)
             self.store.flush()
             self.store.commit()
@@ -188,8 +189,8 @@ if __name__ == "__main__":
     mon.start()
     dbw.start()
 
-    while (not shutdown_event.isSet()) or ((not tagger_done_event.isSet()) and (not scanner_done_event.isSet())):
-        if scanner_done_event.isSet() and tagger_done_event.isSet():
+    while (not shutdown_event.isSet()) or ((not database_done_event.isSet()) and (not tagger_done_event.isSet()) and (not scanner_done_event.isSet())):
+        if scanner_done_event.isSet() and tagger_done_event.isSet() and database_done_event.isSet():
             shutdown_event.set()
 
     for i in ts:
