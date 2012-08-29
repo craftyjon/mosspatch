@@ -1,12 +1,12 @@
 // Models
 window.MediaItem = Backbone.Model.extend({
     idAttribute: 'item_id',
-    urlBase: '/api/1.0/item',
+    urlBase: '/api/1.0/music/',
 });
 
 window.MediaItemCollection = Backbone.Collection.extend({
     model: MediaItem,
-    url: '/api/1.0/all_music',
+    url: '/api/1.0/music',
     parse: function(resp, xhr) {
         return resp.all_music
     },

@@ -12,7 +12,7 @@ database = None
 store = None
 
 
-@route('/api/1.0/all_music')
+@route('/api/1.0/music')
 def all_music():
     lim = request.query.lim or '100'
     limit = int(lim)
@@ -27,6 +27,17 @@ def all_music():
                            'year': md.get('year', 'Unknown')})
 
     return {'all_music': music_list}
+
+
+@route('/api/1.0/music/<id>')
+def single_music(id):
+    item = store.find(MediaItem, MediaItem.item_id == int(id)).any()
+    md = pickle.loads(item.metadata)
+    return {'item_id': item.item_id,
+            'title': md['title'] or item.file_name,
+            'artist': md.get('artist', 'Unknown'),
+            'album': md.get('album', 'Unknown'),
+            'year': md.get('year', 'Unknown')}
 
 
 @route('/')
